@@ -277,11 +277,6 @@ update_hosts_file() {
     fi
 
     print_warning "Host '$HOSTNAME' not registered in parts/hosts.nix"
-    echo ""
-    echo "You need to add this to parts/hosts.nix:"
-    echo ""
-    echo "  $HOSTNAME = self.lib.mkSystem {"
-    echo "    hostname = \"$HOSTNAME\";"
 
     # Format roles array
     local roles_str="[ "
@@ -290,11 +285,25 @@ update_hosts_file() {
     done
     roles_str+="]"
 
-    echo "    roles = $roles_str;"
-    echo "  };"
-    echo ""
+    # Auto-add the host configuration
+    print_step "Adding $HOSTNAME to parts/hosts.nix..."
 
-    read -p "Press Enter to open parts/hosts.nix for editing (Ctrl+C to skip)..."
+    # Create the host entry
+    local host_entry="
+    # $HOSTNAME
+    $HOSTNAME = self.lib.mkSystem {
+      hostname = \"$HOSTNAME\";
+      roles = $roles_str;
+    };
+"
+
+    # Insert before the closing brace and comment
+    sudo sed -i "/# Add more hosts here.../i\\$host_entry" "$hosts_file"
+
+    print_success "Host '$HOSTNAME' added to configuration"
+
+    echo ""
+    read -p "Press Enter to review parts/hosts.nix (Ctrl+C to skip)..."
     sudo "${EDITOR:-nano}" "$hosts_file" || true
 }
 
@@ -302,13 +311,18 @@ update_hosts_file() {
 enable_flakes() {
     print_step "Enabling Nix flakes..."
 
-    sudo mkdir -p /etc/nix
+    # Check if already enabled
+    if sudo grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
+        print_info "Flakes already enabled"
+        return
+    fi
 
-    if ! sudo grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
-        echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf > /dev/null
+    # Try to enable via nix.conf
+    if sudo mkdir -p /etc/nix 2>/dev/null && echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf > /dev/null 2>&1; then
         print_success "Flakes enabled in /etc/nix/nix.conf"
     else
-        print_info "Flakes already enabled"
+        print_warning "/etc/nix/nix.conf is read-only (managed by NixOS config)"
+        print_info "Flakes will be enabled in the host configuration instead"
     fi
 }
 
