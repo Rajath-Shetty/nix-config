@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 
-{
+lib.mkIf config.roles.development {
   # Development tools
   environment.systemPackages = with pkgs; [
     # Version control

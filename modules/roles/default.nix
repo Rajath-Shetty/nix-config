@@ -1,33 +1,17 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
-let
-  cfg = config.roles;
-
-  # Import all role modules
-  roleModules = {
-    gaming = import ./gaming.nix;
-    development = import ./development.nix;
-    niri-desktop = import ./niri-desktop.nix;
-    server = import ./server.nix;
-  };
-
-in
 {
   options.roles = {
-    enable = lib.mkOption {
-      type = lib.types.listOf (lib.types.enum (builtins.attrNames roleModules));
-      default = [ ];
-      description = "List of roles to enable for this system";
-      example = [ "gaming" "development" ];
-    };
-
-    available = lib.mkOption {
-      type = lib.types.attrsOf lib.types.unspecified;
-      default = roleModules;
-      readOnly = true;
-      description = "Available role modules";
-    };
+    gaming = lib.mkEnableOption "gaming role";
+    development = lib.mkEnableOption "development role";
+    niri-desktop = lib.mkEnableOption "niri-desktop role";
+    server = lib.mkEnableOption "server role";
   };
 
-  imports = map (roleName: roleModules.${roleName}) cfg.enable;
+  imports = [
+    ./gaming.nix
+    ./development.nix
+    ./niri-desktop.nix
+    ./server.nix
+  ];
 }

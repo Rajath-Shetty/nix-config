@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 
-{
+lib.mkIf config.roles.gaming {
   # Gaming packages
   environment.systemPackages = with pkgs; [
     steam

@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 
-{
+lib.mkIf config.roles.server {
   # Server packages
   environment.systemPackages = with pkgs; [
     # Monitoring

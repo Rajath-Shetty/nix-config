@@ -32,6 +32,8 @@ inputs.nixpkgs.lib.nixosSystem {
     ../hosts/${hostname}
 
     # Set roles
-    { config.roles.enable = roles; }
+    {
+      roles = inputs.nixpkgs.lib.genAttrs roles (role: true);
+    }
   ] ++ extraModules;
 }

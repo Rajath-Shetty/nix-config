@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 
-{
+lib.mkIf config.roles.niri-desktop {
   # Niri compositor (scrollable tiling)
   # Note: Niri might need to be added from nixpkgs unstable or custom overlay
 
