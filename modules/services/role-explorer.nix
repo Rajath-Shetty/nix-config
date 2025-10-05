@@ -7,7 +7,7 @@ let
 
   role-explorer-script = pkgs.writeShellScriptBin "role-explorer-daemon" ''
     #!${pkgs.bash}/bin/bash
-    cd ${config.users.users.${cfg.user}.home}/nixos-config || cd /etc/nixos
+    cd ${cfg.configPath}
     exec ${pkgs.python3}/bin/python3 ${../parts/role-explorer.py} ${toString cfg.port}
   '';
 
