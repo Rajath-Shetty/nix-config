@@ -1,25 +1,33 @@
 #!/usr/bin/env bash
 # Bootstrap script for fresh NixOS installs
-# This version doesn't require nix-command or flakes to be enabled
+# Run this from within the cloned repository
 
 set -euo pipefail
 
-REPO_URL="${1:-}"
-HOSTNAME="${2:-$(hostname)}"
+HOSTNAME="${1:-$(hostname)}"
 
-if [ -z "$REPO_URL" ]; then
+# Check if we're in the repo
+if [ ! -f "flake.nix" ]; then
   cat << 'EOF'
-Usage: bash install.sh <repo-url> [hostname]
+❌ Error: Not in nixos-config directory
+
+Usage:
+  1. Clone the repository first:
+     git clone https://github.com/yourusername/nixos-config
+     cd nixos-config
+
+  2. Run this script:
+     bash install.sh [hostname]
 
 Examples:
-  bash install.sh https://github.com/yourusername/nixos-config
-  bash install.sh https://github.com/yourusername/nixos-config my-laptop
+  bash install.sh                 # Uses current hostname
+  bash install.sh my-laptop       # Use custom hostname
 
 This script will:
-  1. Clone your configuration to /etc/nixos
+  1. Copy this configuration to /etc/nixos
   2. Generate hardware configuration
   3. Detect NixOS version for system.stateVersion
-  4. Create host configuration
+  4. Create/update host configuration
   5. Build and switch to new configuration
 
 EOF
@@ -30,23 +38,14 @@ echo "╔═══════════════════════�
 echo "║  NixOS Role-Based Configuration Install   ║"
 echo "╚════════════════════════════════════════════╝"
 echo ""
-echo "Repository: $REPO_URL"
-echo "Hostname:   $HOSTNAME"
+echo "Current directory: $(pwd)"
+echo "Hostname:          $HOSTNAME"
 echo ""
 
 # Check we're on NixOS
 if [ ! -f /etc/NIXOS ]; then
   echo "❌ Error: This must be run on NixOS"
   exit 1
-fi
-
-# Check if git is available
-if ! command -v git &> /dev/null; then
-  echo "📦 Installing git..."
-  nix-shell -p git --run "echo Git available"
-  GIT_CMD="nix-shell -p git --run git"
-else
-  GIT_CMD="git"
 fi
 
 # Backup existing config
@@ -56,10 +55,10 @@ if [ -d /etc/nixos ]; then
   sudo mv /etc/nixos "$BACKUP"
 fi
 
-# Clone repository
+# Copy current directory to /etc/nixos
 echo ""
-echo "📥 Cloning configuration..."
-sudo $GIT_CMD clone "$REPO_URL" /etc/nixos
+echo "📥 Copying configuration to /etc/nixos..."
+sudo cp -r "$(pwd)" /etc/nixos
 cd /etc/nixos
 
 # Detect NixOS version
