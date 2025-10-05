@@ -29,10 +29,5 @@ in
     };
   };
 
-  config = lib.mkMerge [
-    # Apply each enabled role
-    (lib.mkMerge (map
-      (roleName: roleModules.${roleName} { inherit config lib pkgs; })
-      cfg.enable))
-  ];
+  imports = map (roleName: roleModules.${roleName}) cfg.enable;
 }
