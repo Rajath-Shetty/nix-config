@@ -40,42 +40,126 @@
         set -euo pipefail
 
         FLAKE_URL="''${1:-}"
-        HOSTNAME="''${2:-}"
+        HOSTNAME="''${2:-$(hostname)}"
 
-        if [ -z "$FLAKE_URL" ] || [ -z "$HOSTNAME" ]; then
-          echo "Usage: nixos-bootstrap <flake-url> <hostname>"
-          echo "Example: nixos-bootstrap github:yourusername/nixos-config gaming-rig"
+        if [ -z "$FLAKE_URL" ]; then
+          echo "Usage: nixos-bootstrap <flake-url> [hostname]"
+          echo ""
+          echo "Examples:"
+          echo "  nixos-bootstrap github:yourusername/nixos-config"
+          echo "  nixos-bootstrap github:yourusername/nixos-config my-laptop"
+          echo "  nixos-bootstrap . my-laptop  (if already cloned)"
           exit 1
         fi
 
-        echo "==> Bootstrapping NixOS with role-based configuration"
-        echo "    Flake: $FLAKE_URL"
-        echo "    Hostname: $HOSTNAME"
+        echo "╔════════════════════════════════════════════╗"
+        echo "║  NixOS Role-Based Configuration Bootstrap ║"
+        echo "╚════════════════════════════════════════════╝"
+        echo ""
+        echo "Flake:    $FLAKE_URL"
+        echo "Hostname: $HOSTNAME"
+        echo ""
 
         # Ensure we're on NixOS
         if [ ! -f /etc/NIXOS ]; then
-          echo "Error: This script must be run on NixOS"
+          echo "❌ Error: This script must be run on NixOS"
           exit 1
         fi
 
         # Backup existing configuration
         if [ -d /etc/nixos ]; then
-          echo "==> Backing up existing configuration"
-          sudo cp -r /etc/nixos /etc/nixos.backup-$(date +%Y%m%d-%H%M%S)
+          BACKUP="/etc/nixos.backup-$(date +%Y%m%d-%H%M%S)"
+          echo "📦 Backing up existing /etc/nixos to $BACKUP"
+          sudo mv /etc/nixos "$BACKUP"
         fi
 
-        # Create hardware configuration if it doesn't exist
-        if [ ! -f /etc/nixos/hardware-configuration.nix ]; then
-          echo "==> Generating hardware configuration"
-          sudo nixos-generate-config
+        # Clone or copy the flake
+        echo ""
+        echo "📥 Fetching configuration..."
+        if [[ "$FLAKE_URL" == "." ]] || [[ "$FLAKE_URL" == /* ]]; then
+          # Local path
+          echo "   Copying from local path: $FLAKE_URL"
+          sudo cp -r "$FLAKE_URL" /etc/nixos
+        else
+          # Remote URL
+          echo "   Cloning from: $FLAKE_URL"
+          sudo ${pkgs.git}/bin/git clone "$FLAKE_URL" /etc/nixos
         fi
 
-        # Build and switch to new configuration
-        echo "==> Building NixOS configuration"
-        sudo nixos-rebuild switch --flake "$FLAKE_URL#$HOSTNAME"
+        # Generate hardware configuration
+        echo ""
+        echo "🔧 Generating hardware configuration..."
+        sudo ${pkgs.nixos-generate-config}/bin/nixos-generate-config --show-hardware-config > /tmp/hardware.nix
 
-        echo "==> Bootstrap complete!"
-        echo "    Your system has been configured with the role-based setup"
+        # Check if host exists
+        if [ ! -d "/etc/nixos/hosts/$HOSTNAME" ]; then
+          echo ""
+          echo "⚠️  Host '$HOSTNAME' not found in configuration!"
+          echo "   Creating new host configuration..."
+
+          sudo mkdir -p "/etc/nixos/hosts/$HOSTNAME"
+          sudo cp /tmp/hardware.nix "/etc/nixos/hosts/$HOSTNAME/hardware-configuration.nix"
+
+          # Create minimal default.nix
+          sudo tee "/etc/nixos/hosts/$HOSTNAME/default.nix" > /dev/null << 'HOSTEOF'
+{ config, lib, pkgs, hostname, ... }:
+{
+  imports = [ ./hardware-configuration.nix ];
+
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  networking.networkmanager.enable = true;
+  time.timeZone = "UTC";
+  i18n.defaultLocale = "en_US.UTF-8";
+
+  users.users.nixos = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" ];
+    initialPassword = "nixos";
+  };
+
+  nixpkgs.config.allowUnfree = true;
+  system.stateVersion = "24.05";
+}
+HOSTEOF
+
+          echo ""
+          echo "⚠️  IMPORTANT: You need to register this host in parts/hosts.nix"
+          echo "   Add this to flake.nixosConfigurations:"
+          echo ""
+          echo "   $HOSTNAME = self.lib.mkSystem {"
+          echo "     hostname = \"$HOSTNAME\";"
+          echo "     roles = [ \"development\" ];"
+          echo "   };"
+          echo ""
+          read -p "Press Enter to continue with default configuration, or Ctrl+C to abort and configure manually..."
+        else
+          # Host exists, update hardware config
+          echo "   Updating hardware configuration for $HOSTNAME..."
+          sudo cp /tmp/hardware.nix "/etc/nixos/hosts/$HOSTNAME/hardware-configuration.nix"
+        fi
+
+        # Build and switch
+        echo ""
+        echo "🔨 Building NixOS configuration..."
+        sudo nixos-rebuild switch --flake "/etc/nixos#$HOSTNAME"
+
+        echo ""
+        echo "╔════════════════════════════════════════════╗"
+        echo "║        ✅ Bootstrap Complete! ✅           ║"
+        echo "╚════════════════════════════════════════════╝"
+        echo ""
+        echo "Your system has been configured with:"
+        echo "  • Role-based NixOS configuration"
+        echo "  • Configuration stored in /etc/nixos"
+        echo "  • Host: $HOSTNAME"
+        echo ""
+        echo "Next steps:"
+        echo "  cd /etc/nixos"
+        echo "  nix run .#role-explorer    # Explore your config"
+        echo "  nixos-docs                 # View documentation"
+        echo ""
       '';
 
       # Role explorer web GUI
