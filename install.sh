@@ -288,17 +288,20 @@ update_hosts_file() {
     # Auto-add the host configuration
     print_step "Adding $HOSTNAME to parts/hosts.nix..."
 
-    # Create the host entry
-    local host_entry="
+    # Create temporary file with the new entry
+    local temp_entry=$(mktemp)
+    cat > "$temp_entry" << EOF
+
     # $HOSTNAME
     $HOSTNAME = self.lib.mkSystem {
-      hostname = \"$HOSTNAME\";
+      hostname = "$HOSTNAME";
       roles = $roles_str;
     };
-"
+EOF
 
-    # Insert before the closing brace and comment
-    sudo sed -i "/# Add more hosts here.../i\\$host_entry" "$hosts_file"
+    # Insert before the "Add more hosts here" comment
+    sudo sed -i "/# Add more hosts here.../r $temp_entry" "$hosts_file"
+    rm -f "$temp_entry"
 
     print_success "Host '$HOSTNAME' added to configuration"
 
