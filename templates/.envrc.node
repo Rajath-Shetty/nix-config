@@ -1,0 +1,9 @@
+# Node.js project direnv configuration
+use flake .#node
+
+# Optional: Set Node-specific variables
+export NODE_ENV=development
+export DEBUG=*
+
+# Add node_modules/.bin to PATH
+PATH_add node_modules/.bin

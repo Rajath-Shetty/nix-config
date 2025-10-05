@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="NixOS Role-Based Configuration Explorer">
+    <title>NixOS Role Explorer</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --surface-light: #334155;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --success: #10b981;
+            --border: #475569;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Main content */
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .count-badge {
+            background: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+            border-color: var(--primary);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .card-footer {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Badges */
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.375rem 0.875rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--surface-light);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty state */
+        .empty {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            background: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Install prompt */
+        .install-prompt {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .install-prompt.hidden {
+            display: none;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .install-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .install-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.25rem;
+            }
+
+            main {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header>
+            <div class="header-content">
+                <h1>
+                    <span class="logo">❄️</span>
+                    NixOS Role Explorer
+                </h1>
+                <button class="refresh-btn" onclick="loadData()">
+                    <span>🔄</span> Refresh
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <div id="install-prompt" class="install-prompt hidden">
+                <div>
+                    <strong>Install as App</strong>
+                    <p style="margin-top: 0.25rem; opacity: 0.9;">Add to your home screen for quick access</p>
+                </div>
+                <button class="install-btn" onclick="installApp()">Install</button>
+            </div>
+
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        🎭 Available Roles
+                        <span id="roles-count" class="count-badge">0</span>
+                    </h2>
+                </div>
+                <div id="roles" class="grid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading roles...
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        🖥️ Configured Hosts
+                        <span id="hosts-count" class="count-badge">0</span>
+                    </h2>
+                </div>
+                <div id="hosts" class="grid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading hosts...
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('Service Worker registered', reg);
+            });
+        }
+
+        // Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-prompt').classList.remove('hidden');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                    document.getElementById('install-prompt').classList.add('hidden');
+                });
+            }
+        }
+
+        // Load data
+        async function loadData() {
+            await Promise.all([loadRoles(), loadHosts()]);
+        }
+
+        async function loadRoles() {
+            try {
+                const response = await fetch('/api/roles');
+                const roles = await response.json();
+                const container = document.getElementById('roles');
+                const countBadge = document.getElementById('roles-count');
+
+                countBadge.textContent = roles.length;
+
+                if (roles.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty">
+                            <div class="empty-icon">📦</div>
+                            <p>No roles found</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = roles.map(role => `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">${role.name}</h3>
+                            <span class="card-icon">🎭</span>
+                        </div>
+                        <div class="card-content">
+                            <p>${role.description}</p>
+                            <div class="card-meta">
+                                <span>📦</span>
+                                <span>~${role.packages} packages</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">${role.file}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading roles:', error);
+                document.getElementById('roles').innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">⚠️</div>
+                        <p>Failed to load roles</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadHosts() {
+            try {
+                const response = await fetch('/api/hosts');
+                const hosts = await response.json();
+                const container = document.getElementById('hosts');
+                const countBadge = document.getElementById('hosts-count');
+
+                countBadge.textContent = hosts.length;
+
+                if (hosts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty">
+                            <div class="empty-icon">💻</div>
+                            <p>No hosts configured</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = hosts.map(host => `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">${host.name}</h3>
+                            <span class="card-icon">🖥️</span>
+                        </div>
+                        <div class="card-content">
+                            <p><strong>Active Roles:</strong></p>
+                            <div class="badges">
+                                ${host.roles.length > 0
+                                    ? host.roles.map(role => `<span class="badge">${role}</span>`).join('')
+                                    : '<span style="color: var(--text-secondary)">No roles assigned</span>'
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer">${host.config}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading hosts:', error);
+                document.getElementById('hosts').innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">⚠️</div>
+                        <p>Failed to load hosts</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initial load
+        loadData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>

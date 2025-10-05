@@ -1,0 +1,144 @@
+.TH NIXOS-CONFIG 1 "2025" "NixOS Role-Based Configuration" "User Commands"
+.SH NAME
+nixos-config \- Role-based NixOS configuration system
+.SH SYNOPSIS
+.B nixos-docs
+[\fITOPIC\fR]
+.br
+.B nixos-rebuild
+switch --flake .#\fIHOSTNAME\fR
+.SH DESCRIPTION
+This NixOS configuration uses a role-based system for managing multiple hosts.
+Instead of managing individual packages, you assign roles like
+.I gaming, development, server
+to each host.
+
+.SH QUICK COMMANDS
+.TP
+.B nixos-docs
+View documentation (overview, roles, dev, webapp, install)
+.TP
+.B nixos-docs dev
+View development environments guide
+.TP
+.B nixos-docs roles
+List available roles
+.TP
+.B nix run .#role-explorer
+Start the Role Explorer web app
+.TP
+.B nix run .#new-role NAME
+Create a new role
+.TP
+.B nix run .#new-host NAME
+Create a new host configuration
+
+.SH AVAILABLE ROLES
+.TP
+.B gaming
+Steam, Discord, GameMode, graphics drivers, audio
+.TP
+.B development
+Git, Docker, VSCode, direnv, multiple language toolchains
+.TP
+.B niri-desktop
+Niri compositor, Wayland, desktop applications
+.TP
+.B server
+SSH, monitoring, automatic updates, security hardening
+
+.SH DEVELOPMENT ENVIRONMENTS
+The system includes per-project development environments using direnv:
+
+.TP
+.B nix develop .#python
+Python 3.11, Poetry, pytest, black, ipython
+.TP
+.B nix develop .#rust
+Rust toolchain, cargo, clippy, rust-analyzer
+.TP
+.B nix develop .#node
+Node.js 20, npm, pnpm, TypeScript
+.TP
+.B nix develop .#go
+Go toolchain and language server
+.TP
+.B nix develop .#cpp
+GCC, Clang, CMake, GDB, Valgrind
+.TP
+.B nix develop .#web
+Full-stack (Node + Python + frameworks)
+
+.SH USING DIRENV
+Create
+.I .envrc
+in your project directory:
+
+.nf
+echo "use flake ~/nixos-config#python" > .envrc
+direnv allow
+.fi
+
+The environment auto-loads when you cd into the directory.
+
+.SH FILES
+.TP
+.I /etc/nixos
+System configuration location (or ~/nixos-config)
+.TP
+.I flake.nix
+Main flake entry point
+.TP
+.I parts/hosts.nix
+Host definitions and role assignments
+.TP
+.I modules/roles/
+Role module definitions
+.TP
+.I hosts/HOSTNAME/
+Per-host configuration files
+
+.SH EXAMPLES
+.TP
+Create and configure a new host:
+.nf
+nix run .#new-host laptop
+# Edit hosts/laptop/default.nix
+# Edit parts/hosts.nix to add:
+#   laptop = self.lib.mkSystem {
+#     hostname = "laptop";
+#     roles = [ "development" "niri-desktop" ];
+#   };
+sudo nixos-rebuild switch --flake .#laptop
+.fi
+
+.TP
+View documentation:
+.nf
+nixos-docs overview
+nixos-docs dev | less
+nixos-docs -i  # Interactive mode
+.fi
+
+.TP
+Start development environment:
+.nf
+cd ~/myproject
+echo "use flake ~/nixos-config#rust" > .envrc
+direnv allow
+# Rust environment is now active
+.fi
+
+.SH SEE ALSO
+.BR nixos-rebuild (8),
+.BR nix (1),
+.BR direnv (1)
+
+.SH DOCUMENTATION
+Full documentation available via:
+.br
+.B nixos-docs
+\- Interactive documentation viewer
+
+.SH AUTHOR
+Generated from NixOS role-based configuration system.

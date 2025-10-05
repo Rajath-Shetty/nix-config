@@ -1,0 +1,6 @@
+# Rust project direnv configuration
+use flake .#rust
+
+# Optional: Set Rust-specific variables
+export RUST_BACKTRACE=1
+export RUST_LOG=debug

@@ -1,0 +1,9 @@
+# Python project direnv configuration
+use flake .#python
+
+# Optional: Auto-activate virtualenv
+layout python python3.11
+
+# Optional: Set project-specific variables
+export PYTHONPATH="${PYTHONPATH}:${PWD}/src"
+export DEBUG=1

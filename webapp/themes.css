@@ -1,0 +1,173 @@
+/* Theme System for NixOS Role Explorer */
+
+/* Default Dark Theme (NixOS) */
+:root,
+[data-theme="dark"] {
+    --primary: #667eea;
+    --primary-dark: #5568d3;
+    --secondary: #764ba2;
+    --background: #0f172a;
+    --surface: #1e293b;
+    --surface-light: #334155;
+    --text: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --success: #10b981;
+    --border: #475569;
+}
+
+/* Light Theme */
+[data-theme="light"] {
+    --primary: #667eea;
+    --primary-dark: #5568d3;
+    --secondary: #764ba2;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --surface-light: #f1f5f9;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --success: #10b981;
+    --border: #e2e8f0;
+}
+
+/* Nord Theme */
+[data-theme="nord"] {
+    --primary: #88c0d0;
+    --primary-dark: #5e81ac;
+    --secondary: #81a1c1;
+    --background: #2e3440;
+    --surface: #3b4252;
+    --surface-light: #434c5e;
+    --text: #eceff4;
+    --text-secondary: #d8dee9;
+    --success: #a3be8c;
+    --border: #4c566a;
+}
+
+/* Dracula Theme */
+[data-theme="dracula"] {
+    --primary: #bd93f9;
+    --primary-dark: #9580d6;
+    --secondary: #ff79c6;
+    --background: #282a36;
+    --surface: #44475a;
+    --surface-light: #6272a4;
+    --text: #f8f8f2;
+    --text-secondary: #d6d6d6;
+    --success: #50fa7b;
+    --border: #6272a4;
+}
+
+/* Gruvbox Dark */
+[data-theme="gruvbox"] {
+    --primary: #fe8019;
+    --primary-dark: #d65d0e;
+    --secondary: #fabd2f;
+    --background: #282828;
+    --surface: #3c3836;
+    --surface-light: #504945;
+    --text: #ebdbb2;
+    --text-secondary: #d5c4a1;
+    --success: #b8bb26;
+    --border: #665c54;
+}
+
+/* Catppuccin Mocha */
+[data-theme="catppuccin"] {
+    --primary: #89b4fa;
+    --primary-dark: #74c7ec;
+    --secondary: #cba6f7;
+    --background: #1e1e2e;
+    --surface: #313244;
+    --surface-light: #45475a;
+    --text: #cdd6f4;
+    --text-secondary: #bac2de;
+    --success: #a6e3a1;
+    --border: #585b70;
+}
+
+/* Tokyo Night */
+[data-theme="tokyo-night"] {
+    --primary: #7aa2f7;
+    --primary-dark: #3d59a1;
+    --secondary: #bb9af7;
+    --background: #1a1b26;
+    --surface: #24283b;
+    --surface-light: #414868;
+    --text: #c0caf5;
+    --text-secondary: #a9b1d6;
+    --success: #9ece6a;
+    --border: #565f89;
+}
+
+/* Solarized Dark */
+[data-theme="solarized-dark"] {
+    --primary: #268bd2;
+    --primary-dark: #2075c2;
+    --secondary: #d33682;
+    --background: #002b36;
+    --surface: #073642;
+    --surface-light: #586e75;
+    --text: #fdf6e3;
+    --text-secondary: #93a1a1;
+    --success: #859900;
+    --border: #586e75;
+}
+
+/* Solarized Light */
+[data-theme="solarized-light"] {
+    --primary: #268bd2;
+    --primary-dark: #2075c2;
+    --secondary: #d33682;
+    --background: #fdf6e3;
+    --surface: #eee8d5;
+    --surface-light: #93a1a1;
+    --text: #002b36;
+    --text-secondary: #586e75;
+    --success: #859900;
+    --border: #93a1a1;
+}
+
+/* One Dark (Atom) */
+[data-theme="one-dark"] {
+    --primary: #61afef;
+    --primary-dark: #528bff;
+    --secondary: #c678dd;
+    --background: #282c34;
+    --surface: #21252b;
+    --surface-light: #2c313c;
+    --text: #abb2bf;
+    --text-secondary: #5c6370;
+    --success: #98c379;
+    --border: #3e4451;
+}
+
+/* Monokai */
+[data-theme="monokai"] {
+    --primary: #66d9ef;
+    --primary-dark: #5ab9d9;
+    --secondary: #f92672;
+    --background: #272822;
+    --surface: #3e3d32;
+    --surface-light: #49483e;
+    --text: #f8f8f2;
+    --text-secondary: #75715e;
+    --success: #a6e22e;
+    --border: #49483e;
+}
+
+/* Theme Transitions */
+:root {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+    transition: background-color 0.3s ease;
+}
+
+.card,
+.docs-main,
+.keybind-group,
+.nav-btn,
+.docs-nav-item {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}

@@ -1,0 +1,30 @@
+# Custom direnv configuration with inline shell definition
+# Useful when you don't want to modify the main flake
+
+use nix
+
+# Or define packages inline:
+# use flake --impure --expr '
+#   let
+#     pkgs = import <nixpkgs> {};
+#   in
+#     pkgs.mkShell {
+#       packages = with pkgs; [
+#         python311
+#         nodejs
+#         custom-package
+#       ];
+#     }
+# '
+
+# Set custom environment variables
+export PROJECT_NAME="myproject"
+export DATABASE_URL="postgresql://localhost/mydb"
+
+# Add custom paths
+PATH_add ./scripts
+PATH_add ./bin
+
+# Watch additional files for changes
+watch_file flake.nix
+watch_file flake.lock

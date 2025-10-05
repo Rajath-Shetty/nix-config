@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="NixOS Role-Based Configuration Explorer">
+    <title>NixOS Role Explorer</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <link rel="stylesheet" href="/themes.css">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/theme-menu-styles.css">
+</head>
+<body data-theme="dark">
+    <div class="app">
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <h1>
+                    <span class="logo">❄️</span>
+                    NixOS Config
+                </h1>
+                <div class="header-actions">
+                    <button class="theme-btn" onclick="toggleThemeMenu()" title="Change Theme">
+                        <span>🎨</span>
+                    </button>
+                    <button class="refresh-btn" onclick="refreshAll()">
+                        <span>🔄</span> Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <button class="nav-btn active" data-view="roles" onclick="showView('roles')">
+                🎭 Roles
+            </button>
+            <button class="nav-btn" data-view="hosts" onclick="showView('hosts')">
+                🖥️ Hosts
+            </button>
+            <button class="nav-btn" data-view="docs" onclick="showView('docs')">
+                📚 Docs
+            </button>
+            <button class="nav-btn" data-view="keybinds" onclick="showView('keybinds')">
+                ⌨️ Keybinds
+            </button>
+        </nav>
+
+        <!-- Theme Menu -->
+        <div id="theme-menu" class="theme-menu hidden">
+            <div class="theme-menu-header">
+                <h3>Choose Theme</h3>
+                <button class="theme-menu-close" onclick="toggleThemeMenu()">✕</button>
+            </div>
+            <div class="theme-grid">
+                <button class="theme-option" data-theme="dark" onclick="setTheme('dark')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #667eea, #764ba2)"></span>
+                    <span>NixOS Dark</span>
+                </button>
+                <button class="theme-option" data-theme="light" onclick="setTheme('light')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #667eea, #764ba2); opacity: 0.7;"></span>
+                    <span>Light</span>
+                </button>
+                <button class="theme-option" data-theme="nord" onclick="setTheme('nord')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #88c0d0, #81a1c1)"></span>
+                    <span>Nord</span>
+                </button>
+                <button class="theme-option" data-theme="dracula" onclick="setTheme('dracula')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #bd93f9, #ff79c6)"></span>
+                    <span>Dracula</span>
+                </button>
+                <button class="theme-option" data-theme="gruvbox" onclick="setTheme('gruvbox')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #fe8019, #fabd2f)"></span>
+                    <span>Gruvbox</span>
+                </button>
+                <button class="theme-option" data-theme="catppuccin" onclick="setTheme('catppuccin')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #89b4fa, #cba6f7)"></span>
+                    <span>Catppuccin</span>
+                </button>
+                <button class="theme-option" data-theme="tokyo-night" onclick="setTheme('tokyo-night')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #7aa2f7, #bb9af7)"></span>
+                    <span>Tokyo Night</span>
+                </button>
+                <button class="theme-option" data-theme="solarized-dark" onclick="setTheme('solarized-dark')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #268bd2, #d33682)"></span>
+                    <span>Solarized Dark</span>
+                </button>
+                <button class="theme-option" data-theme="solarized-light" onclick="setTheme('solarized-light')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #268bd2, #d33682); opacity: 0.7;"></span>
+                    <span>Solarized Light</span>
+                </button>
+                <button class="theme-option" data-theme="one-dark" onclick="setTheme('one-dark')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #61afef, #c678dd)"></span>
+                    <span>One Dark</span>
+                </button>
+                <button class="theme-option" data-theme="monokai" onclick="setTheme('monokai')">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #66d9ef, #f92672)"></span>
+                    <span>Monokai</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Install Prompt -->
+        <div id="install-prompt" class="install-prompt hidden">
+            <div>
+                <strong>Install as App</strong>
+                <p style="margin-top: 0.25rem; opacity: 0.9;">Add to your home screen for quick access</p>
+            </div>
+            <button class="install-btn" onclick="installApp()">Install</button>
+        </div>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Roles View -->
+            <div id="roles-view" class="view active">
+                <div class="view-header">
+                    <h2>Available Roles</h2>
+                </div>
+                <div id="roles-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading roles...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hosts View -->
+            <div id="hosts-view" class="view">
+                <div class="view-header">
+                    <h2>Configured Hosts</h2>
+                </div>
+                <div id="hosts-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading hosts...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Docs View -->
+            <div id="docs-view" class="view docs-view">
+                <div id="docs-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading documentation...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keybinds View -->
+            <div id="keybinds-view" class="view">
+                <div id="keybinds-content"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+    <script>
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('Service Worker registered', reg);
+            });
+        }
+
+        // Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-prompt').classList.remove('hidden');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                    document.getElementById('install-prompt').classList.add('hidden');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
