@@ -9,13 +9,16 @@ lib.mkIf config.roles.niri-desktop {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --cmd niri-session";
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --cmd niri";
       };
     };
   };
 
   # Essential desktop packages
   environment.systemPackages = with pkgs; [
+    # Display manager
+    greetd.tuigreet
+
     # Niri (you may need to add this from an overlay or build from source)
     # niri
 
@@ -25,7 +28,7 @@ lib.mkIf config.roles.niri-desktop {
 
     # Application launcher
     fuzzel
-    rofi-wayland
+    rofi
 
     # File manager
     nautilus
