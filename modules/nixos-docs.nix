@@ -2,16 +2,13 @@
 
 {
   # Add documentation tools to system packages
+  # This will be available system-wide
   environment.systemPackages = with pkgs; [
     # Documentation viewers (optional but recommended)
     glow  # Markdown viewer
     bat   # Syntax-highlighted cat
     fzf   # For interactive mode
-  ];
-
-  # Install documentation command
-  # This will be available system-wide
-  environment.systemPackages = lib.mkIf (inputs ? self) [
+  ] ++ lib.optionals (inputs ? self) [
     inputs.self.packages.${pkgs.system}.nixos-docs
     inputs.self.packages.${pkgs.system}.nixos-help
   ];
