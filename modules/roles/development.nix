@@ -82,12 +82,7 @@
   #   package = pkgs.postgresql_15;
   # };
 
-  # Add users to docker group automatically
-  users.users = lib.mkMerge [
-    (lib.mapAttrs
-      (name: user: {
-        extraGroups = user.extraGroups ++ [ "docker" ];
-      })
-      (lib.filterAttrs (n: u: u.isNormalUser) config.users.users))
-  ];
+  # Note: Users need to manually add "docker" to their extraGroups
+  # Or you can do it in your host configuration like:
+  # users.users.youruser.extraGroups = [ "wheel" "networkmanager" "docker" ];
 }
