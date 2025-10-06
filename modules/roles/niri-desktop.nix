@@ -9,7 +9,7 @@ lib.mkIf config.roles.niri-desktop {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --cmd niri";
+        command = "${pkgs.tuigreet}/bin/tuigreet --cmd niri";
       };
     };
   };
@@ -17,7 +17,7 @@ lib.mkIf config.roles.niri-desktop {
   # Essential desktop packages
   environment.systemPackages = with pkgs; [
     # Display manager
-    greetd.tuigreet
+    tuigreet
 
     # Niri (you may need to add this from an overlay or build from source)
     # niri
@@ -54,7 +54,8 @@ lib.mkIf config.roles.niri-desktop {
     wl-clipboard
 
     # Fonts
-    (nerdfonts.override { fonts = [ "FiraCode" "JetBrainsMono" ]; })
+    nerd-fonts.fira-code
+    nerd-fonts.jetbrains-mono
   ];
 
   # Wayland support
@@ -67,7 +68,11 @@ lib.mkIf config.roles.niri-desktop {
     enable = true;
     wlr.enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-    config.common.default = "*";
+    config = {
+      common = {
+        default = [ "gtk" ];
+      };
+    };
   };
 
   # Fonts
