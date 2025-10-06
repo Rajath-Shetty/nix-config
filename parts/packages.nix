@@ -19,8 +19,7 @@
       };
 
       # Documentation viewer script
-      docs-viewer = pkgs.substituteAll {
-        src = ./docs-viewer.sh;
+      docs-viewer = pkgs.replaceVars ./docs-viewer.sh {
         docsDir = "${docs}/share/nixos-config";
       };
     in
