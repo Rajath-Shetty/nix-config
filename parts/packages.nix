@@ -18,19 +18,18 @@
         '';
       };
 
-      # Documentation viewer script
-      docs-viewer = pkgs.replaceVars ./docs-viewer.sh {
-        docsDir = "${docs}/share/nixos-config";
-      };
+      docsDir = "${docs}/share/nixos-config";
     in
     {
       packages = {
         # Documentation viewer
-        nixos-docs = pkgs.writeShellScriptBin "nixos-docs" (builtins.readFile docs-viewer);
+        nixos-docs = pkgs.writeShellScriptBin "nixos-docs" ''
+          ${builtins.readFile ./docs-viewer.sh}
+        '';
 
         # Alias for convenience
         nixos-help = pkgs.writeShellScriptBin "nixos-help" ''
-          exec ${pkgs.writeShellScriptBin "nixos-docs" (builtins.readFile docs-viewer)}/bin/nixos-docs "$@"
+          exec nixos-docs "$@"
         '';
 
       # Bootstrap script for fresh NixOS installs
